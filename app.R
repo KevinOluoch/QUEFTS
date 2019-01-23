@@ -3,16 +3,18 @@
 
 library(shiny)
 library(shinyjs)
+library(shinydashboard)
 
-ui = fluidPage(
-  useShinyjs(),
+ui = dashboardPage(
   
-  title = 'QUEFTS MODEL',
+  dashboardHeader(title = 'QUEFTS MODEL'),
   
-  sidebarLayout(
+  dashboardSidebar(
     
-    sidebarPanel( 
-      # The Inputs the Model
+    useShinyjs(),
+    
+    sidebarMenu( 
+      # The Inputs to the Model
       h2("INPUTS"),
       
       numericInput(inputId = 'in1', label = "1. Farm Size (HA)", value = 0, min = 0, max = NA, step = NA),
@@ -37,23 +39,23 @@ ui = fluidPage(
         )
       ),
       actionButton(inputId = 'run', label = "RUN")
-
-    ),
+      
+    )),
     
     # SHOW input value in the meantime
-    mainPanel(
+  dashboardBody(
       
       helpText('The input Values'),
-              verbatimTextOutput('ex_out')
-              )
+      verbatimTextOutput('ex_out')
+    )
   )
-)
+
 
 server = function(input, output) {
   # Show/Hide advanced options
   shinyjs::onclick("AdvancedOptions", toggle(id = "advanced", anim = TRUE))
   
-
+  
   runmodel <- eventReactive(input$run, {
     str(sapply(sprintf('in%d', 1:6), function(id) {
       input[[id]]
