@@ -10,32 +10,41 @@ source("nutrientUPT.R")
 
 ui = dashboardPage(
   
-  dashboardHeader(title = 'QUEFTS MODEL'),
+  dashboardHeader(title = 'QUEFTS MODEL', titleWidth = 400),
   
   dashboardSidebar(
     
     useShinyjs(),
-    
-    sidebarMenu( 
+    width = 400,
+    sidebarMenu(
+      #fluidRow(
+      
+      # tags$head(
+      #   tags$style(type="text/css", "label{ display: table-cell; text-align: left; vertical-align: middle; } .form-group { display: table-row;}")
+      # ),
+      
       # The Inputs to the Model
       h2("INPUTS"),
-      div( style = "background-color: rgb(120, 120, 120);color:black;height:120px",
+      div( style = "display:inline;blockbackground-color: rgb(120, 120, 120);color:white;height:120px;width:400px",
            h4("1 Farm Information"),
-           numericInput(inputId = 'in11', label = "1.1 Farm Size (HA)", value = 10, min = 0, max = NA, step = NA)
+           numericInput(inputId = 'in11', label = "1.1 Farm Size (HA)", 
+                                 value = 10, min = 0, max = NA, step = NA, width = '90px')
+           #h6("(HA)")
+           
            ),
       
-      div( style = "background-color: rgb(180, 180, 180);color:black;height:400px",
+      div( style = "background-color: rgb(180, 180, 180);color:black;height:400px;width:400px",
            h4("2 Site Soil Nutrients"),
            numericInput(inputId = 'in21', label = "2.1 soilC (g/kg)", value = 20, min = 0, max = NA, step = NA),
            numericInput(inputId = 'in22', label = "2.2 soilPolsen (p-OLSEN, mg/kg)", value = 5, min = 0, max = NA, step = NA),
            numericInput(inputId = 'in23', label = "2.3 soilK (exchangeable K, mmol/kg)", value = 3, min = 0, max = NA, step = NA),
            numericInput(inputId = 'in24', label = "2.4 soilPH/acidity ", value = 5.8, min = 0, max = NA, step = NA)
-           #h6("") 
+            
       ),
-      div(
+      div( style = "width:400px",
            h4("3 Fertilizer Information"),
-           h6("'Fertilizer Mass Fraction' is currently inactive", 
-              style = "background-color: red;color:black;"),
+           h6("Fertilizer Mass Fraction' is currently inactive", 
+              style = "background-color:red;color:black;width:230px"),
            selectInput(inputId = 'in31', label = '3.1 Fertilizer Mass Fraction', 
                   choices = c("NA", "Fert 1", "Fert 2", "Fert 3") ),
            numericInput(inputId = 'in32', label = "3.2 Fertilizer 1 Quatity (KG)", value = 130, min = 0, max = NA, step = NA),
@@ -45,7 +54,7 @@ ui = dashboardPage(
            numericInput(inputId = 'in35', label = "3.5 Cost ($)", value = 100, min = 0, max = NA, step = NA)
       ),
       
-      div( style = "background-color: rgb(240, 240, 240);color:black;height:200px",
+      div( style = "background-color: rgb(240, 240, 240);color:black;height:200px;width:400px",
            h4("4 Maize Information"),
            numericInput(inputId = 'in41', label = "4.1 Attainable Yield (KG)", value = 20, min = 0, max = NA, step = NA),
            numericInput(inputId = 'in42', label = "4.2 Price (per HA)", value = 30, min = 0, max = NA, step = NA)
@@ -54,13 +63,15 @@ ui = dashboardPage(
       # Auto hide advanced options unless needed
       a(id = "AdvancedOptions", "5 Advanced Options"),
       shinyjs::hidden(
-        div(id = "advanced",
-            numericInput(inputId = "in51", label = "5.1 Advanced Option 1", value = 30, min = 0, max = NA, step = NA),
-            numericInput(inputId = "in52", label = "5.2 Advanced Option 2", value = 45, min = 0, max = NA, step = NA)
+        div( style = "width:400px",
+             id = "advanced",
+             numericInput(inputId = "in51", label = "5.1 Advanced Option 1", value = 30, min = 0, max = NA, step = NA),
+             numericInput(inputId = "in52", label = "5.2 Advanced Option 2", value = 45, min = 0, max = NA, step = NA)
         )
       ),
       actionButton(inputId = 'run', label = "RUN")
       )
+    #)
     ),
     
     # SHOW input value in the meantime
