@@ -47,9 +47,9 @@ ui = dashboardPage(
               style = "background-color:red;color:black;width:230px"),
            selectInput(inputId = 'in31', label = '3.1 Fertilizer Mass Fraction', 
                   choices = c("NA", "Fert 1", "Fert 2", "Fert 3") ),
-           numericInput(inputId = 'in32', label = "3.2 Fertilizer 1 Quatity (KG)", value = 130, min = 0, max = NA, step = NA),
-           numericInput(inputId = 'in33', label = "3.3 Fertilizer 2 Quatity (KG)", value = 10, min = 0, max = NA, step = NA),
-           numericInput(inputId = 'in34', label = "3.4 Fertilizer 3 Quatity (KG)", value = 10, min = 0, max = NA, step = NA),
+           numericInput(inputId = 'in32', label = "3.2 Fertilizer 1 Quantity (KG)", value = 130, min = 0, max = NA, step = NA),
+           numericInput(inputId = 'in33', label = "3.3 Fertilizer 2 Quantity (KG)", value = 10, min = 0, max = NA, step = NA),
+           numericInput(inputId = 'in34', label = "3.4 Fertilizer 3 Quantity (KG)", value = 10, min = 0, max = NA, step = NA),
            
            numericInput(inputId = 'in35', label = "3.5 Cost ($)", value = 100, min = 0, max = NA, step = NA)
       ),
