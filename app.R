@@ -4,9 +4,15 @@
 library(shiny)
 library(shinyjs)
 library(shinydashboard)
+
 source("QUEFTS.R")
 source("combine_yields.R")
 source("nutrientUPT.R")
+
+fert_list <- list("NPK (0.14, 0.061, 0.116)" = "NPK",
+                  "UREA (0.46, 0.0, 0.0)" = "UREA",
+                  "Fert 3 (.180, .209, 0)" = "Fert_3"
+)
 
 ui = dashboardPage(
   
@@ -28,7 +34,7 @@ ui = dashboardPage(
       div( style = "display:inline;blockbackground-color: rgb(120, 120, 120);color:white;height:120px;width:400px",
            h4("1 Farm Information"),
            numericInput(inputId = 'in11', label = "1.1 Farm Size (HA)", 
-                                 value = 10, min = 0, max = NA, step = NA, width = '90px')
+                                 value = 10, min = 0, max = NA, step = NA)
            #h6("(HA)")
            
            ),
@@ -43,15 +49,37 @@ ui = dashboardPage(
       ),
       div( style = "width:400px",
            h4("3 Fertilizer Information"),
-           h6("Fertilizer Mass Fraction' is currently inactive", 
-              style = "background-color:red;color:black;width:230px"),
-           selectInput(inputId = 'in31', label = '3.1 Fertilizer Mass Fraction', 
-                  choices = c("NA", "Fert 1", "Fert 2", "Fert 3") ),
-           numericInput(inputId = 'in32', label = "3.2 Fertilizer 1 Quantity (KG)", value = 130, min = 0, max = NA, step = NA),
-           numericInput(inputId = 'in33', label = "3.3 Fertilizer 2 Quantity (KG)", value = 10, min = 0, max = NA, step = NA),
-           numericInput(inputId = 'in34', label = "3.4 Fertilizer 3 Quantity (KG)", value = 10, min = 0, max = NA, step = NA),
            
-           numericInput(inputId = 'in35', label = "3.5 Cost ($)", value = 100, min = 0, max = NA, step = NA)
+           checkboxGroupInput(inputId = 'in31', label = '3.1 Fertilizer Mass Fraction (N,P,K)',
+                              choices = fert_list,
+                              selected = "NPK (0.14, 0.061, 0.116)"
+                              ),
+           
+           shinyjs::hidden(
+             div( style = "background-color: rgb(180, 180, 180);height:80px;width:300px", id = "NPK",
+                  numericInput(inputId = 'in32', label = "NPK Quantity (KG)", value = 130, min = 0, max = NA, step = NA)
+             )
+           ),
+           shinyjs::hidden(
+             div( style = "background-color: rgb(180, 180, 180);height:80px;width:300px", id = "UREA",
+                  numericInput(inputId = 'in33', label = "UREA Quantity (KG)", value = 10, min = 0, max = NA, step = NA)
+             )
+           ),
+           shinyjs::hidden(
+             div( style = "background-color: rgb(180, 180, 180);height:80px;width:300px", id = "Fert_3",
+                  numericInput(inputId = 'in34', label = "Fert_3 Quantity (KG)", value = 10, min = 0, max = NA, step = NA)
+             )
+           ),
+           
+           #actionButton("add", "Add Fertilizer"),
+           
+           # shinyjs::hidden(
+           #   div(
+           #     id = "advanced",
+           #     actionButton("rmv", "Remove Fertilizer"))
+           # ),
+           
+           numericInput(inputId = 'in35', label = "3.5 Total Cost ($)", value = 100, min = 0, max = NA, step = NA)
       ),
       
       div( style = "background-color: rgb(240, 240, 240);color:black;height:200px;width:400px",
@@ -70,6 +98,8 @@ ui = dashboardPage(
         )
       ),
       actionButton(inputId = 'run', label = "RUN")
+      
+      
       )
     #)
     ),
@@ -88,6 +118,11 @@ server = function(input, output) {
   # Show/Hide advanced options
   shinyjs::onclick("AdvancedOptions", toggle(id = "advanced", anim = TRUE))
   
+  # Show/Hide Fertilizer Quantity options
+  observe({ toggle(id = "NPK", condition = {"NPK" %in% input$in31} )})
+  observe({ toggle(id = "UREA", condition = {"UREA" %in% input$in31} )})
+  observe({ toggle(id = "Fert_3", condition = {"Fert_3" %in% input$in31} )})
+  
   
   runmodel <- eventReactive(input$run, {
     str(sapply(sprintf('in%d', c(11, 21:24, 31:34, 41:42)), function(id) {
@@ -95,21 +130,49 @@ server = function(input, output) {
     }))
   })
   
-  output$yield_est <- renderText({
-    # Inputs
-    siteSoilNutrient <- matrix(c(input$in21, input$in22, input$in23, input$in24), ncol = 4, byrow = TRUE)
-    colnames(siteSoilNutrient) <- c('soilC', 'soilPolsen', 'soilK', 'soilpH')
-    fert_massfrac <-  matrix(c(0.14, 0.061, 0.116, 0.46, 0.0, 0.0, .180, .209, 0), ncol = 3, byrow = TRUE)      #Mass fraction for NPK (0.14, 0.061, 0.116) and Urea (0.46, 0.0, 0.0)
-    fert_amt <-  matrix(c(input$in32, input$in32, input$in32), ncol= 3)
-    nutrients_kg.ha <- fert_amt %*% t(fert_massfrac)
-    
-    ad <- matrix(c(26, 180, 24, 60, 540, 96)) #from Sattari 2014
-    QUEFTS(siteSoilNutrient = siteSoilNutrient, nutrients_kg.ha = nutrients_kg.ha, ad = ad)
-    #siteSoilNutrient[,1]
-    #colnames(siteSoilNutrient)
-    #siteSoilNutrient[,'soilC']
 
-    })
+  
+  observeEvent(input$add, {
+    insertUI(
+      selector = "#add",
+      where = "beforeEnd",
+      div(h6("Enter the Nitrogen, Phosphorous and Pottasium values separeted by commas eg 99,99,99"),
+        textInput(inputId = 'in34', label = "Fertilizer Mass Fraction (N,P,K)"), #, value = 10, min = 0, max = NA, step = NA),
+        
+        numericInput(inputId = 'in33', label = "Fertilizer Quantity (KG)", value = 10, min = 0, max = NA, step = NA),
+        #actionButton("rmv", "Remove Fertilizer")  
+        )
+      )
+  })
+  
+  # observeEvent(input$rmv, {
+  #   removeUI(
+  #     selector = "div:has(> #txt)"
+  #   )
+  # })
+
+
+
+
+  
+  
+  # output$yield_est <- renderText({
+  #   # Inputs
+  #   siteSoilNutrient <- matrix(c(input$in21, input$in22, input$in23, input$in24), ncol = 4, byrow = TRUE)
+  #   colnames(siteSoilNutrient) <- c('soilC', 'soilPolsen', 'soilK', 'soilpH')
+  #   
+  #   fert_massfrac <-  matrix(c(0.14, 0.061, 0.116, 0.46, 0.0, 0.0, .180, .209, 0), ncol = 3, byrow = TRUE)      #Mass fraction for NPK (0.14, 0.061, 0.116) and Urea (0.46, 0.0, 0.0)
+  #   fert_amt <-  matrix(c(input$in32, input$in32, input$in32), ncol= 3)
+  #   nutrients_kg.ha <- fert_amt %*% t(fert_massfrac)
+  #   
+  #   ad <- matrix(c(26, 180, 24, 60, 540, 96)) #from Sattari 2014
+  #   yieldEst <- QUEFTS(siteSoilNutrient = siteSoilNutrient, nutrients_kg.ha = nutrients_kg.ha, ad = ad)
+  #   #siteSoilNutrient[,1]
+  #   #colnames(siteSoilNutrient)
+  #   #siteSoilNutrient[,'soilC']
+  #   paste0("Yield Estimate:", yieldEst)
+  # 
+  #   })
   
   output$ex_out <- renderPrint({runmodel()})
   
