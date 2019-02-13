@@ -14,6 +14,7 @@ fert_list <- list("NPK (0.14, 0.061, 0.116)" = "NPK",
                   "Fert 3 (.180, .209, 0)" = "Fert_3"
 )
 
+
 ui = dashboardPage(
   
   dashboardHeader(title = 'QUEFTS MODEL', titleWidth = 400),
@@ -57,17 +58,17 @@ ui = dashboardPage(
            
            shinyjs::hidden(
              div( style = "background-color: rgb(180, 180, 180);height:80px;width:300px", id = "NPK",
-                  numericInput(inputId = 'in32', label = "NPK Quantity (KG)", value = 130, min = 0, max = NA, step = NA)
+                  numericInput(inputId = 'in39', label = "NPK Quantity (KG)", value = 130, min = 0, max = NA, step = NA)
              )
            ),
            shinyjs::hidden(
              div( style = "background-color: rgb(180, 180, 180);height:80px;width:300px", id = "UREA",
-                  numericInput(inputId = 'in33', label = "UREA Quantity (KG)", value = 10, min = 0, max = NA, step = NA)
+                  numericInput(inputId = 'in310', label = "UREA Quantity (KG)", value = 10, min = 0, max = NA, step = NA)
              )
            ),
            shinyjs::hidden(
              div( style = "background-color: rgb(180, 180, 180);height:80px;width:300px", id = "Fert_3",
-                  numericInput(inputId = 'in34', label = "Fert_3 Quantity (KG)", value = 10, min = 0, max = NA, step = NA)
+                  numericInput(inputId = 'in311', label = "Fert_3 Quantity (KG)", value = 10, min = 0, max = NA, step = NA)
              )
            ),
            
@@ -79,7 +80,21 @@ ui = dashboardPage(
            #     actionButton("rmv", "Remove Fertilizer"))
            # ),
            
-           numericInput(inputId = 'in35', label = "3.5 Total Cost ($)", value = 100, min = 0, max = NA, step = NA)
+           a(id = "add_fert", "Add Fertilizer"),
+           shinyjs::hidden(
+             div( style = "background-color: rgb(180, 180, 180);width:400px",
+                  id = "Add_Fertilizer",
+                  
+                  h6("Enter the Nitrogen, Phosphorous and Pottasium values separeted by commas eg 99,99,99"),
+                  textInput(inputId = "in32", label = "Fertilizer Name", value = "fertname", width = NULL, placeholder = NULL),
+                  numericInput(inputId = 'in33', label = "Fertilizer Mass Fraction - Nitrogen", value = 0, min = 0, max = NA, step = NA),
+                  numericInput(inputId = 'in34', label = "Fertilizer Mass Fraction - Phosphorus", value = 0, min = 0, max = NA, step = NA),
+                  numericInput(inputId = 'in35', label = "Fertilizer Mass Fraction - Potassium", value = 0, min = 0, max = NA, step = NA),
+                  actionButton("Add", "ADD Fertilizer")
+             )
+           ),
+           
+           numericInput(inputId = 'in35', label = "3.6 Total Cost ($)", value = 100, min = 0, max = NA, step = NA)
       ),
       
       div( style = "background-color: rgb(240, 240, 240);color:black;height:200px;width:400px",
@@ -114,9 +129,14 @@ ui = dashboardPage(
   )
 
 
-server = function(input, output) {
+
+server = function(input, output, session) {
+  
+  
   # Show/Hide advanced options
   shinyjs::onclick("AdvancedOptions", toggle(id = "advanced", anim = TRUE))
+  # Show/Hide add fertilizer options
+  shinyjs::onclick("add_fert", toggle(id = "Add_Fertilizer", anim = TRUE))
   
   # Show/Hide Fertilizer Quantity options
   observe({ toggle(id = "NPK", condition = {"NPK" %in% input$in31} )})
@@ -124,26 +144,19 @@ server = function(input, output) {
   observe({ toggle(id = "Fert_3", condition = {"Fert_3" %in% input$in31} )})
   
   
+  observeEvent(input$Add, {
+    fert_list[paste0(input$in32, " (", input$in33, ", ", input$in34, ", ", input$in35, ")")] <-  input$in32
+    updateCheckboxGroupInput(session, "in31", choices = fert_list )
+  })
+  
   runmodel <- eventReactive(input$run, {
     str(sapply(sprintf('in%d', c(11, 21:24, 31:34, 41:42)), function(id) {
       input[[id]]
     }))
   })
   
+    
 
-  
-  observeEvent(input$add, {
-    insertUI(
-      selector = "#add",
-      where = "beforeEnd",
-      div(h6("Enter the Nitrogen, Phosphorous and Pottasium values separeted by commas eg 99,99,99"),
-        textInput(inputId = 'in34', label = "Fertilizer Mass Fraction (N,P,K)"), #, value = 10, min = 0, max = NA, step = NA),
-        
-        numericInput(inputId = 'in33', label = "Fertilizer Quantity (KG)", value = 10, min = 0, max = NA, step = NA),
-        #actionButton("rmv", "Remove Fertilizer")  
-        )
-      )
-  })
   
   # observeEvent(input$rmv, {
   #   removeUI(
