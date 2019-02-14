@@ -16,19 +16,32 @@
 #' a1 <- 26
 #' d1 <- 60
 #' r1 <- 5
+#' Ya1 <- 4893
+#' Yd1 <- 11292
 #' Ya2 <- 180
 #' Yd2 <- 540
 #' Yd3 <- 96
-#' y_att <- 10000
-#' combine_yields(UPT1,a1,d1,r1,Ya2,Yd2,Yd3,y_att)
-combine_yields <- function(UPT1, a1, d1, r1, Ya2, Yd2, Yd3, y_att) {
-  # Determine which nutrient limited yield is lowest.
-  YdX <- min(Yd2, Yd3, y_att)
-  a <- YdX - Ya2
-  b <- UPT1 - r1 - Ya2/d1
-  c <- YdX/a1 - Ya2/d1
-  Y <- Ya2 + 2*a*b/c - a*b^2/c^2
-  #Y <- 0
-  #Y[!(UPT1 == 0 | YdX == 0)] <- (Ya2 + 2*a*b/c - a*b^2/c^2)[!(UPT1 == 0 | YdX == 0)]  #any other value
-  return (Y)
+#' Yatt <- 10000
+#' combine_yields2(UPT1,a1,d1,r1, Ya1, Yd1,Ya2,Yd2,Yd3,Yatt)
+combine_yields <- function(UPT1, a1, d1, r1, Ya1, Yd1, Ya2, Yd2, Yd3, Yatt) {
+  LYD <- min(Yd1, Yd2, Yd3, Yatt)
+  if (Yd1 <= Ya2)  {
+    EY = Yd1
+    if (Yd1 > LYD) {
+      EY = LYD
+    }
+    return(EY)
+  } else if ((Ya1 >= LYD) | (Yd1 <= LYD))  {
+    if ((Ya1 < LYD) & (Yd1 == LYD)) {
+      LYD = min(Yd2, Yd3, Yatt)
+    } else {
+      EY = LYD
+      return(EY)
+    } 
+  } 
+  EY = Ya2 + 2*(LYD-Ya2) * (UPT1-r1 - Ya2/d1) / (LYD/a1 - Ya2 / d1) - (LYD - Ya2) * (UPT1-r1 - Ya2/d1)^2 / (LYD/a1 - Ya2/d1)^2
+  if (Ya2 > LYD) {
+    EY = LYD
+  }
+  return(EY);
 }
