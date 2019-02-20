@@ -147,9 +147,7 @@ server = function(input, output, session) {
       soilpH <- raster('data/TZA_PHIHOX_T__M_sd1_1km.tif') / 10
       
       # Crop predictions
-      WY <- raster('data/TZAgeosurvey_h2o_crp_predictions.tif') %>% resample(soilC) #'data/africa_1km_crop_TZA.tif'
-      WY[WY < 0.8] <- NA   #remove low probability areas
-      WY[WY >= 0.8] <- 12000   #convert to WY. Should be taken from GYGA
+      WY <- raster('data/GYGAClimateZones_TZA_YW.tif') %>% resample(soilC) #'data/africa_1km_crop_TZA.tif'
       
       # Load the data
       rasters_input <-
@@ -211,9 +209,9 @@ server = function(input, output, session) {
       # Plot the results - after converting to raster
       results  <- soilC
       results[] <- NA
-      #results[yields[, 'index']] <- yields
-      plot(yields)
-      #plot(results)
+      results[rasters_input[, 'index']] <- yields
+      #plot(yields)
+      plot(results)
       #plot(soilC)
     })
   

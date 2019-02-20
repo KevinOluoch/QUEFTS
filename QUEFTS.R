@@ -34,7 +34,7 @@
 #' yields <- apply(rasters_input,FUN = QUEFTS, MARGIN = 1, nutrients_kg.ha = nutrients_kg.ha)
 #' results  <- soilC
 #' results[] <- NA
-#' results[yields[,'index']] <- yields
+#' results[rasters_input[,'index']] <- yields
 QUEFTS <- function(siteSoilNutrient,
                    ad = matrix(c(26, 180, 24, 60, 540, 96)),  #Sattari 2014 parameters
                    nutrients_kg.ha) { 
