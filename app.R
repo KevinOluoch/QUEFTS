@@ -22,24 +22,22 @@ ui = dashboardPage(
       # The Inputs to the Model
       h2("INPUTS"),
       #Farm Information
-      div( style = "display:inline;blockbackground-color: rgb(120, 120, 120);color:white;height:120px;width:400px",
+      div( style = "display:inline;background-color: rgb(120, 120, 120);color:White;width:400px", #;height:120px
            h4("1 Farm Information"),
            numericInput(inputId = 'in11', label = "1.1 Farm Size (HA)", 
-                                 value = 10, min = 0, max = NA, step = NA)
+                                 value = 10, min = 0, max = 1000, step = NA)
+           #h5(".  1.2 Farm Location"),
+           # numericInput(inputId = 'in12', label = "Longitude", 
+           #              value = 10, min = 0, max = NA, step = NA),
+           # numericInput(inputId = 'in13', label = "Latitude", 
+           #              value = 10, min = 0, max = NA, step = NA)
            ),
       
-      # div( style = "background-color: rgb(180, 180, 180);color:black;height:400px;width:400px",
-      #      h4("2 Site Soil Nutrients"),
-      #      numericInput(inputId = 'in21', label = "2.1 soilC (g/kg)", value = 20, min = 0, max = NA, step = NA),
-      #      numericInput(inputId = 'in22', label = "2.2 soilPolsen (p-OLSEN, mg/kg)", value = 5, min = 0, max = NA, step = NA),
-      #      numericInput(inputId = 'in23', label = "2.3 soilK (exchangeable K, mmol/kg)", value = 3, min = 0, max = NA, step = NA),
-      #      numericInput(inputId = 'in24', label = "2.4 soilPH/acidity ", value = 5.8, min = 0, max = NA, step = NA)
-      #       
-      # ),
+
       div( style = "width:400px",
-           h4("3 Fertilizer Information"),
+           h4("2 Fertilizer Information"),
            
-           checkboxGroupInput(inputId = 'in31', label = '3.1 Fertilizer Mass Fraction (N,P,K)',
+           checkboxGroupInput(inputId = 'in21', label = '2.1 Fertilizer Mass Fraction (N,P,K)',
                               choices = list("NPK (0.14, 0.061, 0.116)" = "NPK",
                                              "UREA (0.46, 0.0, 0.0)" = "UREA",
                                              "Fert 3 (.180, .209, 0)" = "Fert_3"
@@ -50,34 +48,36 @@ ui = dashboardPage(
            
            shinyjs::hidden(
              div( style = "background-color: rgb(180, 180, 180);height:80px;width:300px", id = "NPK",
-                  numericInput(inputId = 'in39', label = "NPK Quantity (KG)", value = 130, min = 0, max = NA, step = NA)
+                  numericInput(inputId = 'in27', label = "NPK Quantity (KG)", value = 130, min = 0, max = NA, step = NA)
                   )
            ),
            shinyjs::hidden(
              div( style = "background-color: rgb(180, 180, 180);height:80px;width:300px", id = "UREA",
-                  numericInput(inputId = 'in310', label = "UREA Quantity (KG)", value = 10, min = 0, max = NA, step = NA)
+                  numericInput(inputId = 'in28', label = "UREA Quantity (KG)", value = 10, min = 0, max = NA, step = NA)
                   )
            ),
            shinyjs::hidden(
              div( style = "background-color: rgb(180, 180, 180);height:80px;width:300px", id = "Fert_3",
-                  numericInput(inputId = 'in311', label = "Fert_3 Quantity (KG)", value = 10, min = 0, max = NA, step = NA)
+                  numericInput(inputId = 'in29', label = "Fert_3 Quantity (KG)", value = 10, min = 0, max = NA, step = NA)
                   )
              )
            ),
       
-      div( style = "background-color: rgb(240, 240, 240);color:black;height:200px;width:400px",
-           h4("4 Maize Information"),
-           numericInput(inputId = 'in41', label = "4.1 Attainable Yield (KG)", value = 20, min = 0, max = NA, step = NA),
-           numericInput(inputId = 'in42', label = "4.2 Price (per HA)", value = 30, min = 0, max = NA, step = NA)
+      numericInput(inputId = 'in310', label = "Total Fertilizer Cost", 
+                   value = 10, min = 0, max = NA, step = NA),
+      
+      div( style = "color:White;width:400px", #;height:200px
+           h4("3 Maize Information"),
+           numericInput(inputId = 'in31', label = "3.1 Expected Income per KG", value = 20, min = 0, max = NA, step = NA)
       ),
       
       # Auto hide advanced options unless needed
-      a(id = "AdvancedOptions", "5 Advanced Options"),
+      a(id = "AdvancedOptions", "4 Advanced Options"),
       shinyjs::hidden(
         div( style = "width:400px",
              id = "advanced",
-             numericInput(inputId = "in51", label = "5.1 Advanced Option 1", value = 30, min = 0, max = NA, step = NA),
-             numericInput(inputId = "in52", label = "5.2 Advanced Option 2", value = 45, min = 0, max = NA, step = NA)
+             numericInput(inputId = "in51", label = "4.1 Advanced Option 1", value = 30, min = 0, max = NA, step = NA),
+             numericInput(inputId = "in52", label = "4.2 Advanced Option 2", value = 45, min = 0, max = NA, step = NA)
         )
       ),
       actionButton(inputId = 'run', label = "RUN")
@@ -88,10 +88,11 @@ ui = dashboardPage(
     
     # SHOW input value in the meantime
   dashboardBody(
-      
-      helpText('The input Values'),
-      verbatimTextOutput('ex_out'),
-      plotOutput('yield_est')
+      # helpText('The input Values'),
+      # verbatimTextOutput('ex_out'),
+      # SHOW whole country values in the meantime
+      # plotOutput('yield_est')
+      plotOutput("farm_yield_est")
     )
   )
 
@@ -101,6 +102,7 @@ server = function(input, output, session) {
   source('QUEFTS.R')
   source('nutrientUPT.R')
   source('combine_yields.R')
+  source('load_rasters.R')
   
   fert_list <- list("NPK (0.14, 0.061, 0.116)" = "NPK",
                     "UREA (0.46, 0.0, 0.0)" = "UREA",
@@ -108,96 +110,81 @@ server = function(input, output, session) {
   )
   
   
+
+  
   # Show/Hide advanced options
   shinyjs::onclick("AdvancedOptions", toggle(id = "advanced", anim = TRUE))
   # Show/Hide add fertilizer options
   shinyjs::onclick("add_fert", toggle(id = "Add_Fertilizer", anim = TRUE))
   
   # Show/Hide Fertilizer Quantity options
-  observe({ toggle(id = "NPK", condition = {"NPK" %in% input$in31} )})
-  observe({ toggle(id = "UREA", condition = {"UREA" %in% input$in31} )})
-  observe({ toggle(id = "Fert_3", condition = {"Fert_3" %in% input$in31} )})
+  observe({ toggle(id = "NPK", condition = {"NPK" %in% input$in21} )})
+  observe({ toggle(id = "UREA", condition = {"UREA" %in% input$in21} )})
+  observe({ toggle(id = "Fert_3", condition = {"Fert_3" %in% input$in21} )})
   
   
-  observeEvent(input$Add, {
-    fert_list[paste0(input$in32, " (", input$in33, ", ", input$in34, ", ", input$in35, ")")] <-  input$in32
-    updateCheckboxGroupInput(session, "in31", choices = fert_list )
-  })
+  # observeEvent(input$Add, {
+  #   fert_list[paste0(input$in32, " (", input$in33, ", ", input$in34, ", ", input$in35, ")")] <-  input$in32
+  #   updateCheckboxGroupInput(session, "in31", choices = fert_list )
+  # })
   
   seeinputs <- eventReactive(input$run, {
-    str(sapply(sprintf('in%d', c(11, 21:24, 31:34, 39, 310, 311, 41:42)), function(id) {
+    str(sapply(sprintf('in%d', c(11, 21:24, 27:29, 210, 31)), function(id) {
       input[[id]]
     }))
   })
 
-  
-  runmodel <- eventReactive(input$run,{
-      # library(raster)  library(magrittr)
-      
-      # Model Functions
-      source('QUEFTS.R')
-      source('nutrientUPT.R')
-      source('combine_yields.R')
-      
-      # Paths to Soil nutrients information (Rasters)
-      soilC <- raster('data/TZA_ORCDRC_T__M_sd1_1km.tif')
-      soilPolsen <- soilC
-      soilPolsen[] <- 15
-      soilK <- raster('data/TZA_EXKX_T__M_xd1_1km.tif')
-      soilpH <- raster('data/TZA_PHIHOX_T__M_sd1_1km.tif') / 10
-      
-      # Crop predictions
-      WY <- raster('data/GYGAClimateZones_TZA_YW.tif') %>% resample(soilC) #'data/africa_1km_crop_TZA.tif'
-      
-      # Load the data
-      rasters_input <-
+  # Only Respond to the RUN button
+  farm_runmodel <- eventReactive(input$run,{
+    # long <- input$in12
+    # lati <- input$in13
+    # a <- sqrt(2500 * input$in11) # Distant to edges from centre - Square farm
+    # farm.extent <- extent(long - a, long + a, lati - a, lati + a)
+    #
+    # # Extract Farm Extent
+    # farm.soilC <- raster::crop(soilC, farm.extent)
+    # farm.soilPolsen <- raster::crop(soilPolsen, farm.extent)
+    # farm.soilK <- raster::crop(soilK, farm.extent)
+    # farm.soilpH <- raster::crop(soilpH, farm.extent)
+    # farm.WY <- raster::crop(WY, farm.extent)
+
+    # Load the data
+    rasters_input <-
         sapply(list(soilC, soilPolsen, soilK, soilpH, WY), getValues) %>% cbind(index =
-                                                                                  1:(nrow(.)))
-      rasters_input <-
-        rasters_input[complete.cases(rasters_input), ]  #compute only values with all data
-      colnames(rasters_input) <-
-        c('soilC', 'soilPolsen', 'soilK', 'soilpH', 'WY', 'index')
-      
-      # Get the fertilizer amounts and the added fertilizers mass fractions
-      # fert_massfrac1 <-
-      #   c(0.14, 0.061, 0.116)       #Mass fraction for NPK (0.14, 0.061, 0.116) and Urea (0.46, 0.0, 0.0)
-      # fert_massfrac2 <-
-      #   c(0.46, 0.0, 0.0)       #Mass fraction for NPK (0.14, 0.061, 0.116) and Urea (0.46, 0.0, 0.0)
-      # fert_amt1 <-  c(50)
-      # fert_amt2 <-  c(10)
-      #
-      
+                                                                                   1:(nrow(.)))
+    # # rasters_input <-
+    # #   sapply(list(farm.soilC, farm.soilPolsen, farm.soilK, farm.soilpH, farm.WY), getValues) %>% cbind(index =
+    # #                                                                                                      1:(nrow(.)))
+
+    rasters_input <-
+      rasters_input[complete.cases(rasters_input), ]  #compute only values with all data
+    colnames(rasters_input) <-
+      c('soilC', 'soilPolsen', 'soilK', 'soilpH', 'WY', 'index')
+
       fert_amtNPK <- fert_amtUREA <- fert_amtFert_3 <- c(0)
       fert_massfracNPK <- fert_massfracUREA <- fert_massfracFert_3 <- c(0,0,0)
-      
-      if ("NPK" %in% input$in31){
-        fert_amtNPK <- c(input$in39)
+
+      if ("NPK" %in% input$in21){
+        fert_amtNPK <- c(input$in27)
         fert_massfracNPK <- c(0.14, 0.061, 0.116)
-        
+
       }
-      if ("UREA" %in% input$in31){
-        fert_amtUREA <- c(input$in310)
-        fert_massfracUREA <- c(0.46, 0.0, 0.0) 
-        
+      if ("UREA" %in% input$in21){
+        fert_amtUREA <- c(input$in28)
+        fert_massfracUREA <- c(0.46, 0.0, 0.0)
+
       }
-      if ("Fert_3" %in% input$in31){
-        fert_amtFert_3 <- c(input$in311)
+      if ("Fert_3" %in% input$in21){
+        fert_amtFert_3 <- c(input$in29)
         fert_massfracFert_3 <- c(.180, .209, 0)
-        
+
       }
-      
-      
-      
-      
-      
-      # Calculate the Nutrients Kg/Ha
-      # nutrients_kg.ha <-
-      #   fert_amt1 * fert_massfrac1  + fert_amt2 * fert_massfrac2
-      
-      nutrients_kg.ha <- fert_amtNPK * fert_massfracNPK + 
-                         fert_amtUREA * fert_massfracUREA  + 
+
+
+      nutrients_kg.ha <- fert_amtNPK * fert_massfracNPK +
+                         fert_amtUREA * fert_massfracUREA  +
                          fert_amtFert_3 * fert_massfracFert_3
-      
+
       yields <-
         apply(
           rasters_input,
@@ -205,20 +192,59 @@ server = function(input, output, session) {
           MARGIN = 1,
           nutrients_kg.ha = nutrients_kg.ha
         )
-      
+
       # Plot the results - after converting to raster
       results  <- soilC
       results[] <- NA
       results[rasters_input[, 'index']] <- yields
-      #plot(yields)
-      plot(results)
+    #plot(yields)
+    plot(results, main = "Predicted Yield")
       #plot(soilC)
     })
   
-  # Only Respond to the RUN button
-  output$yield_est <- renderPlot({runmodel()})
-  output$ex_out <- renderPrint({seeinputs()})
   
+  output$ex_out <- renderPrint({seeinputs()})
+  output$farm_yield_est <- renderPlot({farm_runmodel()})
+  
+  
+  # output$yield_est <- renderPlot({
+  #   # Load the data
+  #   rasters_input <-
+  #     sapply(list(soilC, soilPolsen, soilK, soilpH, WY), getValues) %>% cbind(index =
+  #                                                                               1:(nrow(.)))
+  # 
+  #   rasters_input <-
+  #     rasters_input[complete.cases(rasters_input), ]  #compute only values with all data
+  #   colnames(rasters_input) <-
+  #     c('soilC', 'soilPolsen', 'soilK', 'soilpH', 'WY', 'index')
+  #   
+  #   fert_amtNPK <- fert_amtUREA <- fert_amtFert_3 <- c(15)
+  #   
+  #   fert_massfracNPK <- c(0.14, 0.061, 0.116)
+  #   fert_massfracUREA <- c(0.46, 0.0, 0.0)
+  #   fert_massfracFert_3 <- c(.180, .209, 0)
+  #   
+  #   nutrients_kg.ha <- fert_amtNPK * fert_massfracNPK + 
+  #     fert_amtUREA * fert_massfracUREA  + 
+  #     fert_amtFert_3 * fert_massfracFert_3
+  #   
+  #   yields <-
+  #     apply(
+  #       rasters_input,
+  #       FUN = QUEFTS,
+  #       MARGIN = 1,
+  #       nutrients_kg.ha = nutrients_kg.ha
+  #     )
+  #   
+  #   # Plot the results - after converting to raster
+  #   results  <- soilC
+  #   results[] <- NA
+  #   results[rasters_input[, 'index']] <- yields
+  #   #plot(yields)
+  #   #plot(soilC)
+  #   plot(results)
+  #   }
+  #   )
 }
 
 
